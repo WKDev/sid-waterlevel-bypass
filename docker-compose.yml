@@ -7,7 +7,7 @@ services:
     environment:
       - PORT=9090
     volumes:
-      - ./sid-waterlevel-bypass:/usr/src/sid-waterlevel-bypass
+      - . :/usr/src/sid-waterlevel-bypass
     ports:
       - 9090:9090
     command: bash -c "yarn install && yarn dev"
