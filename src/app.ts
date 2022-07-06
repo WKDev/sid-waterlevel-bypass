@@ -12,7 +12,7 @@ const options : IClientOptions = {
 
 const app = express();
 const client = mqtt.connect(options)
-const port = process.env.PORT
+const port = process.env.LOCAL_PORT
 
 client.on("connect", () => {	
   console.log("connected"+ client.connected);
