@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  bypass-server:
+    container_name: sid-waterlevel-bypass
+    image: "node:16"
+    working_dir: /usr/src/sid-waterlevel-bypass
+    environment:
+      - PORT=9090
+    volumes:
+      - ./sid-waterlevel-bypass:/usr/src/sid-waterlevel-bypass
+    ports:
+      - 9090:9090
+    command: bash -c "yarn install && yarn dev"
