@@ -40,7 +40,7 @@ class YMDate extends Date {
     var mm = this.pad(this.getMinutes(), 2)
     var ss = this.pad(this.getSeconds(), 2)
 
-    return yyyy + MM + dd + hh + mm + ss;
+    return yyyy + MM + dd + "T"+ hh + mm + ss;
   }
   pad(number: number, length: number) {
     var str = '' + number;
@@ -73,8 +73,8 @@ function om2mPayload(level: string): string {
 <pc>
 <m2m:tsi>
 <lbl>tscin-label</lbl>
-<dgt>${date.YYYYMMDDHHMMSS()}</dgt>
-<con>${level}</con>
+<dgt>${String(date.YYYYMMDDHHMMSS())}</dgt>
+<con>${String(level)}</con>
 </m2m:tsi>
 </pc>
 </m2m:rqp> 
@@ -83,6 +83,9 @@ function om2mPayload(level: string): string {
 }
 
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const date = new YMDate()
+
+  console.log(String(date.YYYYMMDDHHMMSS()))
   res.sendStatus(200)
 });
 
