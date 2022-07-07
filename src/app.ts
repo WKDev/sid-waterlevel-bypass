@@ -6,18 +6,27 @@ const options : IClientOptions = {
   host: process.env.MQTT_HOST?.toString(),
   port: Number(process.env.MQTT_PORT),
   protocol: "tcp",
-  username: String(process.env.MQTT_USER_ID),
-  password: String(process.env.MQTT_PASSWORD),
+  username: process.env.MQTT_USER_ID,
+  password: process.env.MQTT_PASSWORD,
 };
+
+const sendOptions : IClientPublishOptions = {
+  retain:false,
+  qos:0
+}
 
 const app = express();
 const client = mqtt.connect(options)
 const port = process.env.LOCAL_PORT
 
-const sendOptions : IClientPublishOptions = {
-  retain:false,
-  qos:2
-}
+client.on("connect", () => {	
+  console.log("MQTT connected : "+ client.connected);
+})
+
+client.on("error", (error) => { 
+  console.log("Can't connect" + error);
+})
+
 
 function om2mPayload() : string{
   // Payload Message for oneM2M
@@ -30,23 +39,6 @@ function om2mPayload() : string{
   //TagID : WaterLevel
 
   let emul_msg : string =`
-  <m2m:rqp xmlns:m2m="http://www.onem2m.org/xml/protocols">
-  <op>1</op>
-  <to>/IN_CSE-BASE-1/cb-1/ae-Water02-NAJ-001/ts-Waterlevel</to>
-  <fr>C_AE-D-Water02-NAJ-001</fr>
-  <rqi>uniqueid</rqi>
-  <ty>30</ty>
-  <pc>
-  <m2m:tsi>
-  <lbl>tscin-label</lbl>
-  <dgt>20220706T161024</dgt>
-  <con></con>
-  </m2m:tsi>
-  </pc>
-  </m2m:rqp>
-  `
-
-  let msg:string = `
 <m2m:rqp xmlns:m2m="http://www.onem2m.org/xml/protocols">
 <op>1</op>
 <to>/IN_CSE-BASE-1/cb-1/ae-Water02-NAJ-001/ts-Waterlevel</to>
@@ -56,33 +48,36 @@ function om2mPayload() : string{
 <pc>
 <m2m:tsi>
 <lbl>tscin-label</lbl>
+<dgt>20220706T161024</dgt>
+<con></con>
+</m2m:tsi>
+</pc>
+</m2m:rqp>
+  `
+
+  let msg:string = `<m2m:rqp xmlns:m2m="http://www.onem2m.org/xml/protocols">
+<op>1</op>
+<to>/IN_CSE-BASE-1/cb-1/ae-Water02-NAJ-001/ts-Waterlevel</to>
+<fr>C_AE-D-Water02-NAJ-001</fr>
+<rqi>uniqueid</rqi>
+<ty>30</ty>
+<pc>
+<m2m:tsi>
+<lbl>tscin-label</lbl>
 <dgt>20220706T160900</dgt>
-<con>11</con>
+<con>20</con>
 </m2m:tsi>
 </pc>
 </m2m:rqp> 
-  `
+`
   return msg
 }
 
-client.on("connect", () => {	
-  console.log("connected :"+ client.connected);
-})
+app.post('/om2msend', (req: Request, res: Response, next: NextFunction) => {
+  console.log('trying to send data...')
+  client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload(),sendOptions)
 
-client.on("error", (error) => { 
-  console.log("Can't connect" + error);
-})
-
-
-
-app.get('/om2msend', (req: Request, res: Response, next: NextFunction) => {
-  client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload())
-  // console.log(om2mPayload())
   res.sendStatus(200)
-});
-
-app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.send('this is / page.');
 });
 
 app.listen(port, () => {
