@@ -73,6 +73,12 @@ function om2mPayload() : string{
   return msg
 }
 
+app.post('/', (req: Request, res: Response, next: NextFunction) => {
+  console.log(req)
+  res.sendStatus(200)
+});
+
+
 app.post('/om2msend', (req: Request, res: Response, next: NextFunction) => {
   console.log('trying to send data...')
   client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload(),sendOptions)
