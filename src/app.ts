@@ -73,8 +73,11 @@ function om2mPayload() : string{
   return msg
 }
 
-app.post('/', (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.body)
+app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  console.log(req)
+  console.log(req.query)
+  console.log(req.query.height)
+  console.log(req.query.d)
 
   res.sendStatus(200)
 });
