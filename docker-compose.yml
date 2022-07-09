@@ -11,3 +11,15 @@ services:
     ports:
       - 9090:9090
     command: bash -c "yarn install && yarn dev"
+
+  bypass-db:
+    container_name: sid-waterlevel-bypass-db
+    image: "node:16"
+    working_dir: /usr/src/sid-waterlevel-bypass
+    environment:
+      - PORT=5555
+    volumes:
+      - /home/ubuntu/sid-waterlevel-bypass:/usr/src/sid-waterlevel-bypass
+    ports:
+      - 5555:5555
+    command: bash -c "yarn install && yarn prisma studio"

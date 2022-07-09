@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DetectionLogs {
+  id             Int       @id
+  detection_type String?   @db.VarChar(255)
+  start_time     DateTime? @db.Timestamptz(6)
+  end_time       DateTime? @db.Timestamptz(6)
+  start_vid      String?   @db.VarChar(255)
+  end_vid        String?   @db.VarChar(255)
+  device_id      Int?
+  createdAt      DateTime  @db.Timestamptz(6)
+  updatedAt      DateTime  @db.Timestamptz(6)
+  Devices        Devices?  @relation(fields: [device_id], references: [id], onDelete: NoAction)
+}
+
+model Devices {
+  id            Int             @id
+  status        String?         @db.VarChar(255)
+  location      String?         @db.VarChar(255)
+  created       DateTime?       @db.Timestamptz(6)
+  enabled       DateTime?       @db.Timestamptz(6)
+  user_id       Int?
+  createdAt     DateTime        @db.Timestamptz(6)
+  updatedAt     DateTime        @db.Timestamptz(6)
+  Users         Users?          @relation(fields: [user_id], references: [id], onDelete: NoAction)
+  DetectionLogs DetectionLogs[]
+  GrowthLogs    GrowthLogs[]
+  SensorLogs    SensorLogs[]
+}
+
+model GrowthLogs {
+  id         Int       @id
+  type       String?   @db.VarChar(255)
+  start_time DateTime? @db.Timestamptz(6)
+  end_time   DateTime? @db.Timestamptz(6)
+  pic        String?   @db.VarChar(255)
+  device_id  Int?
+  createdAt  DateTime  @db.Timestamptz(6)
+  updatedAt  DateTime  @db.Timestamptz(6)
+  Devices    Devices?  @relation(fields: [device_id], references: [id], onDelete: Cascade)
+}
+
+model Notifications {
+  id             Int       @id
+  noti_type      String?   @db.VarChar(255)
+  occured_device Int?
+  time           DateTime? @db.Timestamptz(6)
+  content        String?   @db.VarChar(255)
+  read           String?   @db.VarChar(255)
+  user_id        Int?
+  createdAt      DateTime  @db.Timestamptz(6)
+  updatedAt      DateTime  @db.Timestamptz(6)
+  Users          Users?    @relation(fields: [user_id], references: [id], onDelete: NoAction)
+}
+
+model SensorLogs {
+  id          Int       @id
+  sensor_type String?   @db.VarChar(255)
+  time        DateTime? @db.Timestamptz(6)
+  data        String?   @db.VarChar(255)
+  device_id   Int?
+  createdAt   DateTime  @db.Timestamptz(6)
+  updatedAt   DateTime  @db.Timestamptz(6)
+  Devices     Devices?  @relation(fields: [device_id], references: [id], onDelete: Cascade)
+}
+
+model Users {
+  id            Int             @id
+  user_name     String?         @db.VarChar(255)
+  email         String?         @db.VarChar(255)
+  api_key       String?         @db.VarChar(255)
+  created       DateTime?       @db.Timestamptz(6)
+  memo          String?         @db.VarChar(255)
+  permission    String?         @db.VarChar(255)
+  enabled       Boolean?        @default(true)
+  createdAt     DateTime        @db.Timestamptz(6)
+  updatedAt     DateTime        @db.Timestamptz(6)
+  Devices       Devices[]
+  Notifications Notifications[]
+}
