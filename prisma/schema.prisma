@@ -7,81 +7,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model DetectionLogs {
-  id             Int       @id
+model DetectionLog {
+  id             Int       @id @default(autoincrement())
   detection_type String?   @db.VarChar(255)
   start_time     DateTime? @db.Timestamptz(6)
   end_time       DateTime? @db.Timestamptz(6)
   start_vid      String?   @db.VarChar(255)
   end_vid        String?   @db.VarChar(255)
-  device_id      Int?
-  createdAt      DateTime  @db.Timestamptz(6)
-  updatedAt      DateTime  @db.Timestamptz(6)
-  Devices        Devices?  @relation(fields: [device_id], references: [id], onDelete: NoAction)
+  deviceId      Int?
+  createdAt      DateTime  @db.Timestamptz(6) @default(now())
+  Device        Device?  @relation(fields: [deviceId], references: [id], onDelete: NoAction)
 }
 
-model Devices {
-  id            Int             @id
-  status        String?         @db.VarChar(255)
-  location      String?         @db.VarChar(255)
-  created       DateTime?       @db.Timestamptz(6)
-  enabled       DateTime?       @db.Timestamptz(6)
-  user_id       Int?
-  createdAt     DateTime        @db.Timestamptz(6)
-  updatedAt     DateTime        @db.Timestamptz(6)
-  Users         Users?          @relation(fields: [user_id], references: [id], onDelete: NoAction)
-  DetectionLogs DetectionLogs[]
-  GrowthLogs    GrowthLogs[]
-  SensorLogs    SensorLogs[]
+model Device {
+  id            Int             @id @default(autoincrement())	
+  uid       String?          @db.VarChar(255) @default(cuid()) @unique
+  status       Boolean?        @default(true)
+  location      Json?         @db.Json 
+  type          String?         @db.VarChar(255)
+  model          String?         @db.VarChar(255)
+  installed     DateTime?       @db.Timestamptz(6)
+  userId       Int?
+  createdAt     DateTime        @db.Timestamptz(6) @default(now())
+  User         User?          @relation(fields: [userId], references: [id], onDelete: NoAction)
+  DetectionLog DetectionLog[]
+  GrowthLog    GrowthLog[]
+  SensorLog    SensorLog[]
 }
 
-model GrowthLogs {
-  id         Int       @id
+model GrowthLog {
+  id         Int       @id @default(autoincrement())	
   type       String?   @db.VarChar(255)
   start_time DateTime? @db.Timestamptz(6)
   end_time   DateTime? @db.Timestamptz(6)
   pic        String?   @db.VarChar(255)
-  device_id  Int?
-  createdAt  DateTime  @db.Timestamptz(6)
-  updatedAt  DateTime  @db.Timestamptz(6)
-  Devices    Devices?  @relation(fields: [device_id], references: [id], onDelete: Cascade)
+  data        String?   @db.VarChar(255)
+  deviceId  Int?
+  createdAt  DateTime  @db.Timestamptz(6) @default(now())
+  Device    Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 }
 
-model Notifications {
-  id             Int       @id
-  noti_type      String?   @db.VarChar(255)
+model Notification {
+  id             Int       @id @default(autoincrement())
+  notiType      String?   @db.VarChar(255)
   occured_device Int?
   time           DateTime? @db.Timestamptz(6)
   content        String?   @db.VarChar(255)
   read           String?   @db.VarChar(255)
-  user_id        Int?
-  createdAt      DateTime  @db.Timestamptz(6)
-  updatedAt      DateTime  @db.Timestamptz(6)
-  Users          Users?    @relation(fields: [user_id], references: [id], onDelete: NoAction)
+  userId        Int?
+  createdAt      DateTime  @db.Timestamptz(6) @default(now())
+  User          User?    @relation(fields: [userId], references: [id], onDelete: NoAction)
 }
 
-model SensorLogs {
-  id          Int       @id
-  sensor_type String?   @db.VarChar(255)
-  time        DateTime? @db.Timestamptz(6)
-  data        String?   @db.VarChar(255)
-  device_id   Int?
-  createdAt   DateTime  @db.Timestamptz(6)
-  updatedAt   DateTime  @db.Timestamptz(6)
-  Devices     Devices?  @relation(fields: [device_id], references: [id], onDelete: Cascade)
+model SensorLog {
+  id          Int       @id @default(autoincrement())
+  sensorType String?   @db.VarChar(255)
+  name        String?   @db.VarChar(255)
+  createdAt   DateTime  @db.Timestamptz(6) @default(now())
+  data        Json?   @db.Json
+  deviceId   Int?
+  Device     Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 }
 
-model Users {
-  id            Int             @id
+model User {
+  id            Int             @id @default(autoincrement())
   user_name     String?         @db.VarChar(255)
-  email         String?         @db.VarChar(255)
-  api_key       String?         @db.VarChar(255)
-  created       DateTime?       @db.Timestamptz(6)
+  email         String?         @db.VarChar(255) @unique
+  apiKey       String?          @db.VarChar(255) @default(cuid()) @unique
   memo          String?         @db.VarChar(255)
   permission    String?         @db.VarChar(255)
   enabled       Boolean?        @default(true)
-  createdAt     DateTime        @db.Timestamptz(6)
-  updatedAt     DateTime        @db.Timestamptz(6)
-  Devices       Devices[]
-  Notifications Notifications[]
+  createdAt     DateTime        @db.Timestamptz(6) @default(now())
+  Device       Device[]
+  Notification Notification[]
 }
+
+
+

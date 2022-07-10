@@ -1,6 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import mqtt, { IClientOptions, IClientPublishOptions } from 'mqtt';
 import 'dotenv/config'
+import { PrismaClient } from '@prisma/client';
+import internal from 'stream';
+
+const prisma = new PrismaClient();
 
 const options: IClientOptions = {
   host: process.env.MQTT_HOST?.toString(),
@@ -15,9 +19,35 @@ const sendOptions: IClientPublishOptions = {
   qos: 0
 }
 
+
+
 const app = express();
 const client = mqtt.connect(options)
 const port = process.env.LOCAL_PORT
+
+async function createData(id:any, level:any){
+
+  // model SensorLog {
+  //   id          Int       @id @default(autoincrement())
+  //   sensorType String?   @db.VarChar(255)
+  //   name        String?   @db.VarChar(255)
+  //   createdAt   DateTime  @db.Timestamptz(6) @default(now())
+  //   data        Json?   @db.Json
+  //   deviceId   Int?
+  //   Device     Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  // }
+
+  const jsontype  = {level: level}
+  
+  const create = await prisma.sensorLog.create({
+    data:{
+      name: "C_AE-D-Water02-NAJ-001",
+      sensorType:"Waterlevel",
+      data: jsontype,
+      deviceId:1
+    }
+  })
+}
 
 client.on("connect", () => {
   console.log("MQTT connected : " + client.connected);
@@ -92,10 +122,13 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.get('/om2msend', (req: Request, res: Response, next: NextFunction) => {
   console.log('trying to send data...')
-  console.log(req.query.id)
-  console.log(req.query.level)
+  const {id, level} = req.query
+  createData(id, level)
+  
 
-  client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload(String(req.query.level)), sendOptions)
+
+
+  // client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload(String(req.query.level)), sendOptions)
 
   res.sendStatus(200)
 });
