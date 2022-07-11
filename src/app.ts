@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import internal from 'stream';
 
 const prisma = new PrismaClient();
+const water02_correction_factor : number = 158;
 
 const options: IClientOptions = {
   host: process.env.MQTT_HOST?.toString(),
@@ -103,7 +104,7 @@ function om2mPayload(level: string): string {
   const kr_time_transform = new Date().getTime() + (new Date().getTimezoneOffset() * 60 * 1000) + 9 * 60 * 60 * 1000;
   const date_correction = new YMDate(kr_time_transform)
 
-  const level_correction : Number = Math.round(Number(level) / 10);
+  const level_correction : Number = water02_correction_factor - Math.round(Number(level) / 10);
 
   let msg: string = `<m2m:rqp xmlns:m2m="http://www.onem2m.org/xml/protocols">
 <op>1</op>
