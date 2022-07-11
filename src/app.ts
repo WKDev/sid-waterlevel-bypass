@@ -37,14 +37,21 @@ async function createData(id:any, level:any){
   //   Device     Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   // }
 
-  const jsontype  = {level: level}
+  const kr_time_transform = new Date().getTime() + (new Date().getTimezoneOffset() * 60 * 1000) + 9 * 60 * 60 * 1000;
+  const date_correction = new YMDate(kr_time_transform)
+
+  const level_correction : Number = Math.round(Number(level) / 10);
+
+
+  const jsontype  = {level: String(level_correction)}
   
   const create = await prisma.sensorLog.create({
     data:{
       name: "C_AE-D-Water02-NAJ-001",
       sensorType:"Waterlevel",
       data: jsontype,
-      deviceId:1
+      deviceId:1,
+      createdAt: date_correction
     }
   })
 }
@@ -58,8 +65,9 @@ client.on("error", (error) => {
 })
 
 class YMDate extends Date {
-  constructor() {
-    super();
+  constructor(raw_date:any) {
+    super(raw_date);
+
   }
 
   YYYYMMDDHHMMSS() {
@@ -91,8 +99,11 @@ function om2mPayload(level: string): string {
   //tenantID : NAJ-001
   //DeviceID : Water02
   //TagID : WaterLevel
+  
+  const kr_time_transform = new Date().getTime() + (new Date().getTimezoneOffset() * 60 * 1000) + 9 * 60 * 60 * 1000;
+  const date_correction = new YMDate(kr_time_transform)
 
-  const date = new YMDate()
+  const level_correction : Number = Math.round(Number(level) / 10);
 
   let msg: string = `<m2m:rqp xmlns:m2m="http://www.onem2m.org/xml/protocols">
 <op>1</op>
@@ -103,8 +114,8 @@ function om2mPayload(level: string): string {
 <pc>
 <m2m:tsi>
 <lbl>tscin-label</lbl>
-<dgt>${String(date.YYYYMMDDHHMMSS())}</dgt>
-<con>${String(level)}</con>
+<dgt>${String(date_correction.YYYYMMDDHHMMSS())}</dgt>
+<con>${String(level_correction)}</con>
 </m2m:tsi>
 </pc>
 </m2m:rqp> 
@@ -113,10 +124,11 @@ function om2mPayload(level: string): string {
 }
 
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  const date = new YMDate()
+  // const date = new YMDate()
+  const kr_time_transform = new Date().getTime() + (new Date().getTimezoneOffset() * 60 * 1000) + 9 * 60 * 60 * 1000;
+  const date = new YMDate(kr_time_transform)
 
-  console.log(String(date.YYYYMMDDHHMMSS()))
-  res.sendStatus(200)
+  res.send(String(date.YYYYMMDDHHMMSS()))
 });
 
 
@@ -124,9 +136,6 @@ app.get('/om2msend', (req: Request, res: Response, next: NextFunction) => {
   console.log('trying to send data...')
   const {id, level} = req.query
   createData(id, level)
-  
-
-
 
   // client.publish("/oneM2M/req/C_AE-D-Water02-NAJ-001/IN_CSE-BASE-1", om2mPayload(String(req.query.level)), sendOptions)
 
